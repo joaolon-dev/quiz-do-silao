@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Quiz do Silão</title>
+<meta property="og:title" content="QUIZ DO SILÃO 🫏">
+<meta property="og:description" content="Você conhece o Silão? Prove.">
+<meta property="og:image" content="https://joaolon-dev.github.io/silao-burro/silao.jpg">
+<meta name="robots" content="noindex, nofollow">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    min-height: 100vh;
+    background: repeating-linear-gradient(45deg, #ffeb3b 0 40px, #ff9800 40px 80px);
+    font-family: Impact, "Arial Black", sans-serif;
+    display: flex; align-items: center; justify-content: center;
+    padding: 24px 16px; overflow-x: hidden; text-align: center;
+  }
+  .card {
+    width: min(480px, 100%);
+    background: #fff; border: 6px solid #000; border-radius: 16px;
+    box-shadow: 10px 10px 0 #e91e63; padding: 20px;
+  }
+  h1 { font-size: clamp(2.2rem, 10vw, 3.5rem); color: #fff; -webkit-text-stroke: 2px #000; text-shadow: 4px 4px 0 #e91e63; line-height: 1; }
+  .progresso { font-size: 1rem; color: #e91e63; margin-bottom: 8px; }
+  .foto {
+    width: 100%; max-height: 300px; object-fit: cover; object-position: center 30%;
+    border: 5px solid #000; border-radius: 10px; margin: 12px 0;
+    transition: transform .3s;
+  }
+  .foto.zoom { transform: rotate(-5deg) scale(1.05); }
+  .pergunta { font-size: clamp(1.3rem, 5.5vw, 1.7rem); margin-bottom: 14px; line-height: 1.15; }
+  button {
+    display: block; width: 100%; margin: 10px 0;
+    font-family: inherit; font-size: 1.15rem; text-align: left;
+    padding: 12px 16px; border: 4px solid #000; border-radius: 10px;
+    background: #ffeb3b; color: #000; cursor: pointer; box-shadow: 4px 4px 0 #000;
+  }
+  button:active { transform: translate(3px,3px); box-shadow: 1px 1px 0 #000; }
+  button.certo { background: #4caf50; color: #fff; }
+  button.errado { background: #f44336; color: #fff; }
+  button:disabled { cursor: default; }
+  .principal { background: #e91e63; color: #fff; text-align: center; font-size: 1.4rem; }
+  .reacao { font-size: 1.2rem; min-height: 1.5em; margin: 10px 0; color: #e91e63; }
+  .nota { font-size: 4rem; color: #e91e63; -webkit-text-stroke: 2px #000; }
+  .titulo { font-size: 1.5rem; margin: 8px 0 16px; }
+  a { color: #000; }
+  .burro { position: fixed; font-size: 3rem; pointer-events: none; animation: cai linear forwards; z-index: 10; }
+  @keyframes cai { to { transform: translateY(110vh) rotate(720deg); } }
+</style>
+</head>
+<body>
+<div class="card" id="card"></div>
+<script>
+  const PERGUNTAS = [
+    { q: "Quanto é 2 + 2 pro Silão?",
+      ops: ["4", "22", "Peraí que vou pegar a calculadora"], certa: 2,
+      reacao: "Ele ainda tá procurando a calculadora. 🧮" },
+    { q: "Quantos neurônios o Silão tem?",
+      ops: ["86 bilhões, como todo mundo", "2, e eles brigam pra ver quem trabalha", "Ainda tá carregando..."], certa: 1,
+      reacao: "E hoje os dois tão de folga. 🧠❌" },
+    { q: "O Silão chega numa porta escrito PUXE. O que ele faz?",
+      ops: ["Puxa", "Empurra por 5 minutos", "Liga pro suporte técnico"], certa: 1,
+      reacao: "E depois culpa a porta. 🚪" },
+    { q: "Qual o animal favorito do Silão?",
+      ops: ["Leão", "Águia", "Ele mesmo 🫏"], certa: 2,
+      reacao: "Ele se identifica muito. 🫏" },
+    { q: "Qual o maior medo do Silão?",
+      ops: ["Escuro", "Altura", "Prova de marcar X"], certa: 2,
+      reacao: "Até hoje ele marca todas. ✍️" },
+  ];
+  // foto1.jpg ... foto5.jpg; se não existir, usa silao.jpg
+  const fotoDe = i => `foto${i + 1}.jpg`;
+
+  const RESULTADOS = [
+    [5, "Você conhece o Silão melhor que ele mesmo. 🏆"],
+    [4, "Quase PhD em Silão. 🎓"],
+    [2, "Conhece o Silão só de vista. 👀"],
+    [0, "Você é tão burro quanto o Silão. 🫏"],
+  ];
+
+  const card = document.getElementById('card');
+  let atual = 0, pontos = 0;
+
+  function inicio() {
+    card.innerHTML = `
+      <h1>QUIZ DO<br>SILÃO</h1>
+      <img class="foto" src="silao.jpg" alt="Silão">
+      <p class="pergunta">Você conhece mesmo o Silão?<br>5 perguntas. Sem calculadora.</p>
+      <button class="principal" onclick="comecar()">COMEÇAR 🫏</button>
+      <p style="margin-top:12px"><a href="./">voltar</a></p>`;
+  }
+
+  function comecar() { atual = 0; pontos = 0; mostrar(); }
+
+  function mostrar() {
+    const p = PERGUNTAS[atual];
+    card.innerHTML = `
+      <div class="progresso">PERGUNTA ${atual + 1} DE ${PERGUNTAS.length}</div>
+      <img class="foto" id="foto" src="${fotoDe(atual)}" onerror="this.onerror=null;this.src='silao.jpg'" alt="Silão">
+      <p class="pergunta">${p.q}</p>
+      ${p.ops.map((o, i) => `<button onclick="responder(${i})">${o}</button>`).join('')}
+      <p class="reacao" id="reacao"></p>`;
+  }
+
+  function responder(i) {
+    const p = PERGUNTAS[atual];
+    const botoes = card.querySelectorAll('button');
+    botoes.forEach(b => b.disabled = true);
+    botoes[p.certa].classList.add('certo');
+    if (i === p.certa) { pontos++; chuva(10); }
+    else botoes[i].classList.add('errado');
+    document.getElementById('reacao').textContent = (i === p.certa ? "ACERTOU! " : "ERROU! ") + p.reacao;
+    document.getElementById('foto').classList.add('zoom');
+    setTimeout(() => {
+      atual++;
+      atual < PERGUNTAS.length ? mostrar() : fim();
+    }, 2000);
+  }
+
+  function fim() {
+    const titulo = RESULTADOS.find(([min]) => pontos >= min)[1];
+    card.innerHTML = `
+      <h1>RESULTADO</h1>
+      <img class="foto" src="silao.jpg" alt="Silão">
+      <div class="nota">${pontos}/${PERGUNTAS.length}</div>
+      <p class="titulo">${titulo}</p>
+      <button class="principal" onclick="comecar()">JOGAR DE NOVO</button>
+      <p style="margin-top:12px"><a href="./">voltar</a></p>`;
+    chuva(pontos === PERGUNTAS.length ? 40 : 15);
+  }
+
+  function chuva(n) {
+    for (let k = 0; k < n; k++) {
+      const e = document.createElement('div');
+      e.className = 'burro';
+      e.textContent = '🫏';
+      e.style.left = Math.random() * 100 + 'vw';
+      e.style.top = '-60px';
+      e.style.animationDuration = 2 + Math.random() * 2 + 's';
+      e.style.animationDelay = Math.random() + 's';
+      document.body.appendChild(e);
+      setTimeout(() => e.remove(), 5000);
+    }
+  }
+
+  inicio();
+</script>
+</body>
+</html>
